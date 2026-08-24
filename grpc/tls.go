@@ -55,6 +55,7 @@ func (c TLSConfig) serverTLSConfig() (*tls.Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("tls: load key pair: %w", err)
 	}
+	// #nosec G402 -- minVersion is validated to be >= TLS 1.2 above.
 	cfg := &tls.Config{
 		Certificates: []tls.Certificate{cert},
 		MinVersion:   minVersion,

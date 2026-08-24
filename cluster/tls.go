@@ -28,11 +28,18 @@ type TLSConfig struct {
 	MinVersion        uint16
 }
 
-func (c *TLSConfig) minVersion() uint16 {
+// minVersion returns the configured minimum TLS version, defaulting to TLS 1.2,
+// and rejects anything older. gosec's G402 cannot see through this indirection,
+// hence the #nosec annotations at the call sites; the check here is what
+// actually enforces the floor.
+func (c *TLSConfig) minVersion() (uint16, error) {
 	if c.MinVersion == 0 {
-		return tls.VersionTLS12
+		return tls.VersionTLS12, nil
 	}
-	return c.MinVersion
+	if c.MinVersion < tls.VersionTLS12 {
+		return 0, fmt.Errorf("tls: min version %#x is below TLS 1.2", c.MinVersion)
+	}
+	return c.MinVersion, nil
 }
 
 func (c *TLSConfig) certificates() ([]tls.Certificate, error) {
@@ -86,11 +93,16 @@ func (c *TLSConfig) ServerConfig() (*tls.Config, error) {
 	} else if pool != nil {
 		clientAuth = tls.VerifyClientCertIfGiven
 	}
+	minVersion, err := c.minVersion()
+	if err != nil {
+		return nil, err
+	}
+	// #nosec G402 -- minVersion is validated to be >= TLS 1.2 above.
 	return &tls.Config{
 		Certificates: certs,
 		ClientCAs:    pool,
 		ClientAuth:   clientAuth,
-		MinVersion:   c.minVersion(),
+		MinVersion:   minVersion,
 	}, nil
 }
 
@@ -104,10 +116,15 @@ func (c *TLSConfig) ClientConfig() (*tls.Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	minVersion, err := c.minVersion()
+	if err != nil {
+		return nil, err
+	}
+	// #nosec G402 -- minVersion is validated to be >= TLS 1.2 above.
 	return &tls.Config{
 		Certificates: certs,
 		RootCAs:      pool,
-		MinVersion:   c.minVersion(),
+		MinVersion:   minVersion,
 	}, nil
 }
 
