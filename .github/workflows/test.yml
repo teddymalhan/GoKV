@@ -66,8 +66,13 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: go test -v -shuffle=on ./...
 
-      - name: Upload coverage
+      - name: Upload coverage (advisory until Codecov repository is activated)
         if: matrix.os == 'ubuntu-latest' && matrix.go == '1.25'
+        # OIDC authentication works, but Codecov currently returns "Repository
+        # not found" for PallasDB/PallasDB. Keep the failure visible without
+        # misreporting the passing test suite as failed; remove this once the
+        # repository is activated in Codecov.
+        continue-on-error: true
         uses: codecov/codecov-action@v5
         with:
           files: ./coverage.out
