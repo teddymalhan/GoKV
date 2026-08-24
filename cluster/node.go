@@ -416,12 +416,16 @@ func (n *Node) shutdown() error {
 			errs = append(errs, fmt.Errorf("shutdown discovery: %w", err))
 		}
 	}
+
+	// Let every canceled loop leave while Raft is still able to resolve work
+	// already submitted to it. In particular, leadershipFenceLoop may be inside
+	// Barrier().Error(); shutting Raft down first can strand that future forever.
+	n.wg.Wait()
 	if n.raft != nil {
 		if err := n.raft.Shutdown().Error(); err != nil {
 			errs = append(errs, fmt.Errorf("shutdown raft: %w", err))
 		}
 	}
-	n.wg.Wait()
 	errs = append(errs, n.closeAll())
 	return errors.Join(errs...)
 }

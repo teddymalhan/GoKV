@@ -183,6 +183,9 @@ func TestTLSConfigRejectsIncompleteSettings(t *testing.T) {
 	client, err = (&TLSConfig{MinVersion: tls.VersionTLS13}).ClientConfig()
 	require.NoError(t, err)
 	require.Equal(t, uint16(tls.VersionTLS13), client.MinVersion)
+
+	_, err = (&TLSConfig{MinVersion: tls.VersionTLS11}).ClientConfig()
+	require.ErrorContains(t, err, "below TLS 1.2")
 }
 
 func TestErrNotLeaderIsMatchable(t *testing.T) {

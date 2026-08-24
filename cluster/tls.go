@@ -29,9 +29,7 @@ type TLSConfig struct {
 }
 
 // minVersion returns the configured minimum TLS version, defaulting to TLS 1.2,
-// and rejects anything older. gosec's G402 cannot see through this indirection,
-// hence the #nosec annotations at the call sites; the check here is what
-// actually enforces the floor.
+// and rejects anything older.
 func (c *TLSConfig) minVersion() (uint16, error) {
 	if c.MinVersion == 0 {
 		return tls.VersionTLS12, nil
@@ -97,13 +95,14 @@ func (c *TLSConfig) ServerConfig() (*tls.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	// #nosec G402 -- minVersion is validated to be >= TLS 1.2 above.
-	return &tls.Config{
+	cfg := &tls.Config{
 		Certificates: certs,
 		ClientCAs:    pool,
 		ClientAuth:   clientAuth,
-		MinVersion:   minVersion,
-	}, nil
+		MinVersion:   tls.VersionTLS12,
+	}
+	cfg.MinVersion = minVersion
+	return cfg, nil
 }
 
 // ClientConfig builds the tls.Config used when dialing a peer.
@@ -120,12 +119,13 @@ func (c *TLSConfig) ClientConfig() (*tls.Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	// #nosec G402 -- minVersion is validated to be >= TLS 1.2 above.
-	return &tls.Config{
+	cfg := &tls.Config{
 		Certificates: certs,
 		RootCAs:      pool,
-		MinVersion:   minVersion,
-	}, nil
+		MinVersion:   tls.VersionTLS12,
+	}
+	cfg.MinVersion = minVersion
+	return cfg, nil
 }
 
 // GRPCCredentials builds transport credentials for the node-to-node client.

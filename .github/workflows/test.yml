@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: read
+  # Codecov authenticates with GitHub OIDC instead of a repository secret.
+  id-token: write
 
 jobs:
   test:
@@ -69,7 +71,7 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           files: ./coverage.out
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
           # A coverage report that silently fails to upload is a coverage gate
           # that does not exist. See codecov.yml for the thresholds enforced.
           fail_ci_if_error: true
