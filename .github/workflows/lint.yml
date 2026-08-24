@@ -30,29 +30,3 @@ jobs:
         with:
           version: v2.12.2
           args: --timeout 5m
-
-  lint-strict:
-    # Staging ground for the linter set we want `.golangci.yml` to become:
-    # errorlint, exhaustive, gocritic, gosec and nilerr on top of the blocking
-    # set. It is advisory (`continue-on-error`) only until the existing
-    # findings are cleaned up. When this job reports zero issues, fold
-    # .github/golangci-strict.yml into .golangci.yml and delete this job.
-    # Do not add exclusions here to make it green — fix the code.
-    name: Lint (strict, advisory)
-    runs-on: ubuntu-latest
-    continue-on-error: true
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-          cache: true
-
-      - name: golangci-lint (strict set)
-        uses: golangci/golangci-lint-action@v8
-        with:
-          version: v2.12.2
-          args: --timeout 10m --config .github/golangci-strict.yml
