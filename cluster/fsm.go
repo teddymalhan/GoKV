@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -474,17 +473,6 @@ func (f *FSM) rename(oldpath, newpath string) error {
 		return f.renameFn(oldpath, newpath)
 	}
 	return os.Rename(oldpath, newpath)
-}
-
-// syncParentDir fsyncs the directory containing path so a rename into it is
-// durable.
-func syncParentDir(path string) error {
-	d, err := os.Open(filepath.Dir(path))
-	if err != nil {
-		return err
-	}
-	defer func() { _ = d.Close() }()
-	return d.Sync()
 }
 
 // Get reads a key from the store under RLock so Restore cannot race.

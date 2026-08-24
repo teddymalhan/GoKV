@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -593,6 +594,17 @@ func TestRestoreIntoMissingDataDir(t *testing.T) {
 		t.Fatalf("reopen: %v", err)
 	}
 	target.store = store
+
+	// The point is to leave the FSM with a store whose live data directory has
+	// been removed out from under it. On Windows a directory that still holds an
+	// open store cannot be deleted (the WAL handle pins it), so the reopened
+	// store must be closed first. Restore has to cope with a missing data dir
+	// either way.
+	if runtime.GOOS == "windows" {
+		if err := target.store.Close(); err != nil {
+			t.Fatalf("close reopened store: %v", err)
+		}
+	}
 	if err := os.RemoveAll(target.dirpath); err != nil {
 		t.Fatalf("remove data dir: %v", err)
 	}

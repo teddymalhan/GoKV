@@ -295,7 +295,7 @@ func (c *Client) resolveLeader(ctx context.Context, from *conn) (*conn, error) {
 		}
 	}
 
-	var lastErr error = ErrNoLeader
+	var lastErr = ErrNoLeader
 	for _, candidate := range candidates {
 		resp, err := candidate.cluster.GetLeader(lookupCtx, &pbv1.GetLeaderRequest{})
 		if err != nil {

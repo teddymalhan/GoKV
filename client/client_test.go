@@ -208,7 +208,7 @@ func reverse(s []string) {
 func startStub(t *testing.T) *stubServer {
 	t.Helper()
 
-	lis, err := net.Listen("tcp", "127.0.0.1:0")
+	lis, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
 	require.NoError(t, err)
 
 	stub := &stubServer{addr: lis.Addr().String(), store: map[string]string{}}

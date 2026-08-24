@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -135,7 +136,7 @@ func TestTLSStreamLayerRejectsUnauthenticatedPeer(t *testing.T) {
 	clientCfg, err := anonymous.ClientConfig()
 	require.NoError(t, err)
 
-	conn, err := tls.DialWithDialer(&net.Dialer{Timeout: 5 * time.Second}, "tcp", layer.Addr().String(), clientCfg)
+	conn, err := (&tls.Dialer{NetDialer: &net.Dialer{Timeout: 5 * time.Second}, Config: clientCfg}).DialContext(context.Background(), "tcp", layer.Addr().String())
 	if err == nil {
 		defer func() { _ = conn.Close() }()
 		_, err = conn.Write([]byte("x"))

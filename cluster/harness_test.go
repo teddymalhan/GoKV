@@ -254,6 +254,11 @@ type harness struct {
 	t   *testing.T
 	bus *harnessBus
 
+	// root is the single parent directory every node's data dir lives under.
+	// It exists so the stores can be closed before the directory is removed:
+	// see harnessNew for why that ordering matters.
+	root string
+
 	mu    sync.Mutex
 	nodes map[string]*harnessNode
 }
@@ -261,6 +266,13 @@ type harness struct {
 func harnessNew(t *testing.T) *harness {
 	t.Helper()
 	h := &harness{t: t, bus: harnessNewBus(), nodes: map[string]*harnessNode{}}
+	// The shared root must be created *before* stopAll is registered. Go runs
+	// t.Cleanup functions last-registered first, so with this ordering stopAll
+	// (which shuts every node down and closes every store, releasing the WAL
+	// file handles) runs before t.TempDir removes the root. On Windows a store
+	// that is still open pins its kv_log, so the reverse order would make
+	// RemoveAll fail with "file in use" and fail every harness test.
+	h.root = t.TempDir()
 	t.Cleanup(h.stopAll)
 	return h
 }
@@ -281,7 +293,7 @@ func (h *harness) start(id string, mutate func(*Config)) *harnessNode {
 		RaftAddr: string(addr),
 	})
 
-	store, err := db.NewKV(filepath.Join(h.t.TempDir(), "kv-"+id))
+	store, err := db.NewKV(filepath.Join(h.root, "kv-"+id))
 	require.NoError(h.t, err)
 
 	logStore := raft.NewInmemStore()

@@ -50,7 +50,7 @@ func (f *fakeServer) firedDeadline() bool {
 func startFakeServer(t *testing.T) *fakeServer {
 	t.Helper()
 
-	lis, err := net.Listen("tcp", "127.0.0.1:0")
+	lis, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", "127.0.0.1:0")
 	require.NoError(t, err)
 
 	fake := &fakeServer{addr: lis.Addr().String(), store: map[string]string{}}

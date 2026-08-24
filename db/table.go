@@ -893,7 +893,7 @@ func expandProjection(schema *Schema, cols []any) ([]any, []ColumnDesc, error) {
 		if _, ok := expr.(*ExprStar); ok {
 			for _, col := range schema.Cols {
 				proj = append(proj, col.Name)
-				desc = append(desc, ColumnDesc{Name: col.Name, Type: col.Type})
+				desc = append(desc, ColumnDesc(col))
 			}
 			continue
 		}

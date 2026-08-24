@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
@@ -138,7 +139,7 @@ func newTLSStreamLayer(bindAddr string, advertise net.Addr, cfg *TLSConfig) (*tl
 	if err != nil {
 		return nil, err
 	}
-	ln, err := net.Listen("tcp", bindAddr)
+	ln, err := (&net.ListenConfig{}).Listen(context.Background(), "tcp", bindAddr)
 	if err != nil {
 		return nil, fmt.Errorf("tls: listen on %s: %w", bindAddr, err)
 	}
@@ -158,7 +159,7 @@ func newTLSStreamLayer(bindAddr string, advertise net.Addr, cfg *TLSConfig) (*tl
 // Dial opens a TLS connection to a peer. The server name is derived from the
 // dial address by crypto/tls when ClientConfig leaves it empty.
 func (l *tlsStreamLayer) Dial(address raft.ServerAddress, timeout time.Duration) (net.Conn, error) {
-	return tls.DialWithDialer(&net.Dialer{Timeout: timeout}, "tcp", string(address), l.client)
+	return (&tls.Dialer{NetDialer: &net.Dialer{Timeout: timeout}, Config: l.client}).DialContext(context.Background(), "tcp", string(address))
 }
 
 func (l *tlsStreamLayer) Accept() (net.Conn, error) { return l.listener.Accept() }
