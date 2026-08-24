@@ -29,10 +29,10 @@ jobs:
       targets: ${{ steps.list.outputs.targets }}
       count: ${{ steps.list.outputs.count }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
@@ -64,10 +64,10 @@ jobs:
         target: ${{ fromJSON(needs.discover.outputs.targets) }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
@@ -79,7 +79,7 @@ jobs:
       - name: Restore generated fuzz corpus
         # The interesting-input corpus Go builds up lives outside the repo, so
         # without this every nightly run restarts from the seed corpus only.
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ steps.cache-dir.outputs.dir }}
           key: fuzz-corpus-${{ runner.os }}-${{ matrix.target }}-${{ github.run_id }}
@@ -96,7 +96,7 @@ jobs:
 
       - name: Upload crashers
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fuzz-crashers-${{ matrix.target }}
           path: |

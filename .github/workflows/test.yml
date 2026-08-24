@@ -30,10 +30,10 @@ jobs:
           - "stable"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version: ${{ matrix.go }}
           cache: true
@@ -73,7 +73,7 @@ jobs:
         # misreporting the passing test suite as failed; remove this once the
         # repository is activated in Codecov.
         continue-on-error: true
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: ./coverage.out
           use_oidc: true
